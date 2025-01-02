@@ -18,6 +18,11 @@ kotlin {
         implementation("org.jetbrains.kotlinx:multik-default:0.2.3")
       }
     }
+    val commonTest by getting {
+      dependencies {
+        implementation(kotlin("test"))
+      }
+    }
   }
   jvm {
     testRuns["test"].executionTask.configure {
