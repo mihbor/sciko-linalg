@@ -14,7 +14,7 @@ kotlin {
   sourceSets {
     val commonMain by getting {
       dependencies {
-        implementation("org.jetbrains.kotlinx:multik-core:0.2.3")
+        api("org.jetbrains.kotlinx:multik-core:0.2.3")
         implementation("org.jetbrains.kotlinx:multik-default:0.2.3")
       }
     }

@@ -1,3 +1,5 @@
+package ltd.mbor.sciko.linalg
+
 import org.jetbrains.kotlinx.multik.api.Multik
 import org.jetbrains.kotlinx.multik.api.linalg.LinAlg
 import org.jetbrains.kotlinx.multik.api.linalg.dot

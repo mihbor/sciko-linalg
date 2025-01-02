@@ -1,3 +1,5 @@
+package ltd.mbor.sciko.linalg
+
 import QRDecomposition.Solver.Companion.BLOCK_SIZE
 import org.jetbrains.kotlinx.multik.api.identity
 import org.jetbrains.kotlinx.multik.api.linalg.dot

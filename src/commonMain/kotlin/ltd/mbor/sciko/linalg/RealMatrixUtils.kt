@@ -1,3 +1,5 @@
+package ltd.mbor.sciko.linalg
+
 import org.jetbrains.kotlinx.multik.api.linalg.norm
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.ndarray.data.*
