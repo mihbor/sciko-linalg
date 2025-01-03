@@ -246,7 +246,7 @@ class SingularValueDecompositionTest {
   @Test
   fun testStability1() {
     val m = mk.zeros<Double>(201, 201)
-    loadRealMatrix(m, "matrix1.csv")
+    loadRealMatrix(m, "/matrix1.csv")
     try {
       SingularValueDecomposition(m)
     } catch (e: Exception) {
@@ -258,7 +258,7 @@ class SingularValueDecompositionTest {
   @Test
   fun testStability2() {
     val m = mk.zeros<Double>(7, 168)
-    loadRealMatrix(m, "matrix2.csv")
+    loadRealMatrix(m, "/matrix2.csv")
     try {
       SingularValueDecomposition(m)
     } catch (e: Throwable) {
