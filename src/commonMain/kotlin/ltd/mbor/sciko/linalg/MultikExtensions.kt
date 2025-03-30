@@ -6,6 +6,7 @@ import org.jetbrains.kotlinx.multik.api.linalg.dot
 import org.jetbrains.kotlinx.multik.api.linalg.inv
 import org.jetbrains.kotlinx.multik.api.linalg.norm
 import org.jetbrains.kotlinx.multik.api.mk
+import org.jetbrains.kotlinx.multik.api.ndarray
 import org.jetbrains.kotlinx.multik.ndarray.data.*
 
 
@@ -15,6 +16,15 @@ fun MultiArray<Double, D2>.trace(): Double {
   if (shape[0] != shape[1]) throw IllegalStateException("matrix not square")
   return (0..<shape[0]).map{this[it, it]}.sum()
 }
+
+fun MultiArray<Double, D1>.tilde() = mk.ndarray(mk[
+  mk[     0.0,-this[2], this[1]],
+  mk[ this[2],     0.0,-this[0]],
+  mk[-this[1], this[0],     0.0]
+])
+
+infix fun MultiArray<Double, D1>.cross(other: MultiArray<Double, D1>) =
+  tilde() dot other
 
 /**
  * Returns a diagonal array.
