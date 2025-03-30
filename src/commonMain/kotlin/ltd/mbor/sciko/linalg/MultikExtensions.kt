@@ -4,8 +4,17 @@ import org.jetbrains.kotlinx.multik.api.Multik
 import org.jetbrains.kotlinx.multik.api.linalg.LinAlg
 import org.jetbrains.kotlinx.multik.api.linalg.dot
 import org.jetbrains.kotlinx.multik.api.linalg.inv
+import org.jetbrains.kotlinx.multik.api.linalg.norm
+import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.ndarray.data.*
 
+
+fun MultiArray<Double, D1>.norm() = mk.linalg.norm(reshape(shape[0],1))
+
+fun MultiArray<Double, D2>.trace(): Double {
+  if (shape[0] != shape[1]) throw IllegalStateException("matrix not square")
+  return (0..<shape[0]).map{this[it, it]}.sum()
+}
 
 /**
  * Returns a diagonal array.
