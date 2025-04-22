@@ -9,6 +9,7 @@ import org.jetbrains.kotlinx.multik.ndarray.operations.toDoubleArray
 typealias FastMath = Math
 typealias RealMatrix = MultiArray<Double, D2>
 typealias RealVector = MultiArray<Double, D1>
+typealias ArrayRealVector = MultiArray<Double, D1>
 
 val RealVector.dimension get() = shape[0]
 val RealMatrix.rowDimension get() = shape[0]
@@ -18,9 +19,6 @@ fun RealVector.toArray() = toDoubleArray()
 
 val RealMatrix.isSquare: Boolean
   get() = shape[0] == shape[1]
-
-class NonSquareMatrixException(val rowDimension: Int, val columnDimension: Int):
-  RuntimeException("Matrix not square $rowDimension != $columnDimension")
 
 val RealMatrix.norm get() = mk.linalg.norm(this)
 

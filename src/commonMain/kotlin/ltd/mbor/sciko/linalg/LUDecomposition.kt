@@ -9,7 +9,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
 import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
 
 
-/**N
+/**
  * Calculates the LUP-decomposition of a square matrix.
  *
  * The LUP-decomposition of a matrix A consists of three matrices L, U and

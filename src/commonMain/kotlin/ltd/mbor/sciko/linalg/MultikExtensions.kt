@@ -60,6 +60,8 @@ fun <T> Multik.diagonal(elements: List<T>, dtype: DataType): D2Array<T> {
 
 fun LinAlg.det(M: MultiArray<Double, D2>) = LUDecomposition(M).determinant
 
+fun LinAlg.eig(M: MultiArray<Double, D2>) = EigenDecomposition(M).let { it.d to it.v }
+
 fun LinAlg.svd(m: MultiArray<Double, D2>): Triple<MultiArray<Double, D2>, MultiArray<Double, D2>, MultiArray<Double, D2>> {
   val decomposition = SingularValueDecomposition(m)
   return Triple(decomposition.u, decomposition.s, decomposition.vT)
