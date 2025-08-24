@@ -5,10 +5,17 @@ import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.ndarray
 import org.jetbrains.kotlinx.multik.api.zeros
 import org.jetbrains.kotlinx.multik.ndarray.complex.ComplexDouble
+import org.jetbrains.kotlinx.multik.ndarray.data.D1
 import org.jetbrains.kotlinx.multik.ndarray.data.D2
+import org.jetbrains.kotlinx.multik.ndarray.data.Dim1
+import org.jetbrains.kotlinx.multik.ndarray.data.Dim2
+import org.jetbrains.kotlinx.multik.ndarray.data.Dimension
+import org.jetbrains.kotlinx.multik.ndarray.data.MultiArray
 import org.jetbrains.kotlinx.multik.ndarray.data.MutableMultiArray
 import org.jetbrains.kotlinx.multik.ndarray.data.get
 import org.jetbrains.kotlinx.multik.ndarray.data.set
+import kotlin.math.abs
+import kotlin.math.sqrt
 
 /**
  * Calculates the eigen decomposition of a real matrix.
@@ -134,8 +141,8 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
    */
   constructor(main: DoubleArray, secondary: DoubleArray) {
     isSymmetric = true
-    this.main = main.clone()
-    this.secondary = secondary.clone()
+    this.main = main.copyOf()
+    this.secondary = secondary.copyOf()
     transformer = null
     val size = main.size
     val z = Array(size) { i -> DoubleArray(size) { j -> if (i == j) 1.0 else 0.0 } }
@@ -238,7 +245,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
    * @see #getRealEigenvalue(int)
    * @see #getImagEigenvalues()
    */
-  fun getRealEigenvalues(): DoubleArray = realEigenvalues.clone()
+  fun getRealEigenvalues(): DoubleArray = realEigenvalues.copyOf()
 
   /**
    * Returns the real part of the i<sup>th</sup> eigenvalue of the original
@@ -265,7 +272,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
    * @see #getImagEigenvalue(int)
    * @see #getRealEigenvalues()
    */
-  fun getImagEigenvalues(): DoubleArray = imagEigenvalues.clone()
+  fun getImagEigenvalues(): DoubleArray = imagEigenvalues.copyOf()
 
   /**
    * Gets the imaginary part of the i<sup>th</sup> eigenvalue of the original
@@ -316,7 +323,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
     }
     val sqrtEigenValues = realEigenvalues.map {
       if (it <= 0) throw MathUnsupportedOperationException()
-      FastMath.sqrt(it)
+      sqrt(it)
     }.toDoubleArray()
     val sqrtEigen = mk.diagonal(sqrtEigenValues.toList())
     return v dot sqrtEigen dot vT
@@ -365,8 +372,15 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
      * @throws DimensionMismatchException if the matrices dimensions do not match.
      * @throws SingularMatrixException if the decomposed matrix is singular.
      */
-    @JvmName("solveRealVector")
-    fun solve(b: RealVector): RealVector {
+    inline fun <reified D: Dimension> solve(b: MultiArray<Double, out D>): MultiArray<Double, D> {
+      return when(D::class) {
+        D1::class -> solveVector(b as MultiArray<Double, D1>) as MultiArray<Double, D>
+        D2::class -> solveMatrix(b as MultiArray<Double, D2>) as MultiArray<Double, D>
+        else -> throw IllegalArgumentException("Dimension ${D::class} not supported")
+      }
+    }
+
+    fun solveVector(b: RealVector): RealVector {
       if (!isNonSingular) throw SingularMatrixException()
       val m = realEigenvalues.size
       if (b.dimension != m) throw DimensionMismatchException(b.dimension, m)
@@ -381,8 +395,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
       return mk.ndarray(bp)
     }
 
-    @JvmName("solveRealMatrix")
-    fun solve(b: RealMatrix): RealMatrix {
+    fun solveMatrix(b: RealMatrix): RealMatrix {
       if (!isNonSingular) throw SingularMatrixException()
       val m = realEigenvalues.size
       if (b.rowDimension != m) throw DimensionMismatchException(b.rowDimension, m)
@@ -438,7 +451,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
     private fun eigenvalueNorm(i: Int): Double {
       val re = realEigenvalues[i]
       val im = imagEigenvalues[i]
-      return FastMath.sqrt(re*re + im*im)
+      return sqrt(re*re + im*im)
     }
 
     /**
@@ -483,7 +496,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
    * to tridiagonal form.
    */
   private fun findEigenVectors(householderMatrix: Array<DoubleArray>) {
-    val z = householderMatrix.map { it.clone() }.toTypedArray()
+    val z = householderMatrix.map { it.copyOf() }.toTypedArray()
     val n = main.size
     realEigenvalues = DoubleArray(n)
     imagEigenvalues = DoubleArray(n)
@@ -498,15 +511,15 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
     // Determine the largest main and secondary value in absolute term.
     var maxAbsoluteValue = 0.0
     for (i in 0 until n) {
-      maxAbsoluteValue = maxOf(maxAbsoluteValue, FastMath.abs(realEigenvalues[i]), FastMath.abs(e[i]))
+      maxAbsoluteValue = maxOf(maxAbsoluteValue, abs(realEigenvalues[i]), abs(e[i]))
     }
     // Make null any main and secondary value too small to be significant
     if (maxAbsoluteValue != 0.0) {
       for (i in 0 until n) {
-        if (FastMath.abs(realEigenvalues[i]) <= Precision.EPSILON * maxAbsoluteValue) {
+        if (abs(realEigenvalues[i]) <= Precision.EPSILON * maxAbsoluteValue) {
           realEigenvalues[i] = 0.0
         }
-        if (FastMath.abs(e[i]) <= Precision.EPSILON * maxAbsoluteValue) {
+        if (abs(e[i]) <= Precision.EPSILON * maxAbsoluteValue) {
           e[i] = 0.0
         }
       }
@@ -517,8 +530,8 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
       do {
         m = j
         while (m < n - 1) {
-          val delta = FastMath.abs(realEigenvalues[m]) + FastMath.abs(realEigenvalues[m + 1])
-          if (FastMath.abs(e[m]) + delta == delta) break
+          val delta = abs(realEigenvalues[m]) + abs(realEigenvalues[m + 1])
+          if (abs(e[m]) + delta == delta) break
           m++
         }
         if (m != j) {
@@ -527,7 +540,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
           }
           its++
           var q = (realEigenvalues[j + 1] - realEigenvalues[j]) / (2 * e[j])
-          val t = FastMath.sqrt(1 + q * q)
+          val t = sqrt(1 + q * q)
           q = if (q < 0) {
             realEigenvalues[m] - realEigenvalues[j] + e[j] / (q - t)
           } else {
@@ -540,15 +553,15 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
           while(i >= j) {
             val p = s * e[i]
             val h = c * e[i]
-            if (FastMath.abs(p) >= FastMath.abs(q)) {
+            if (abs(p) >= abs(q)) {
               c = q / p
-              val t2 = FastMath.sqrt(c * c + 1.0)
+              val t2 = sqrt(c * c + 1.0)
               e[i + 1] = p * t2
               s = 1.0 / t2
               c *= s
             } else {
               s = p / q
-              val t2 = FastMath.sqrt(s * s + 1.0)
+              val t2 = sqrt(s * s + 1.0)
               e[i + 1] = q * t2
               c = 1.0 / t2
               s *= c
@@ -598,10 +611,10 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
       }
     }
     // Determine the largest eigen value in absolute term.
-    maxAbsoluteValue = realEigenvalues.maxOf { FastMath.abs(it) }
+    maxAbsoluteValue = realEigenvalues.maxOf { abs(it) }
     if (maxAbsoluteValue != 0.0) {
       for (i in 0 until n) {
-        if (FastMath.abs(realEigenvalues[i]) < Precision.EPSILON * maxAbsoluteValue) {
+        if (abs(realEigenvalues[i]) < Precision.EPSILON * maxAbsoluteValue) {
           realEigenvalues[i] = 0.0
         }
       }
@@ -629,7 +642,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
       } else {
         val x = matT[i + 1][i + 1]
         val p = 0.5*(matT[i][i] - x)
-        val z = FastMath.sqrt(FastMath.abs(p*p + matT[i + 1][i]*matT[i][i + 1]))
+        val z = sqrt(abs(p*p + matT[i + 1][i]*matT[i][i + 1]))
         realEigenvalues[i] = x + p
         imagEigenvalues[i] = z
         realEigenvalues[i + 1] = x + p
@@ -666,7 +679,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
     var norm = 0.0
     for (i in 0 until n) {
       for (j in maxOf(i - 1, 0) until n) {
-        norm += FastMath.abs(matrixT[i][j])
+        norm += abs(matrixT[i][j])
       }
     }
     // we can not handle a matrix with zero norm
@@ -704,14 +717,14 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
               q = (realEigenvalues[i] - p) * (realEigenvalues[i] - p) + imagEigenvalues[i] * imagEigenvalues[i]
               val t = (x * s - z * r) / q
               matrixT[i][idx] = t
-              matrixT[i + 1][idx] = if (FastMath.abs(x) > FastMath.abs(z)) {
+              matrixT[i + 1][idx] = if (abs(x) > abs(z)) {
                 (-r - w * t) / x
               } else {
                 (-s - y * t) / z
               }
             }
             // Overflow control
-            val t = FastMath.abs(matrixT[i][idx])
+            val t = abs(matrixT[i][idx])
             if ((Precision.EPSILON * t) * t > 1) {
               for (j in i..idx) {
                 matrixT[j][idx] /= t
@@ -723,7 +736,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
       // Complex vector
         val l = idx - 1
       // Last vector component imaginary so matrix is triangular
-        if (FastMath.abs(matrixT[idx][idx - 1]) > FastMath.abs(matrixT[idx - 1][idx])) {
+        if (abs(matrixT[idx][idx - 1]) > abs(matrixT[idx - 1][idx])) {
           matrixT[idx - 1][idx - 1] = q / matrixT[idx][idx - 1]
           matrixT[idx - 1][idx] = -(matrixT[idx][idx] - p) / matrixT[idx][idx - 1]
         } else {
@@ -758,14 +771,14 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
                 imagEigenvalues[i] * imagEigenvalues[i] - q * q
               val vi = (realEigenvalues[i] - p) * 2.0 * q
               val adjustedVr = if (Precision.equals(vr, 0.0) && Precision.equals(vi, 0.0)) {
-                Precision.EPSILON * norm * (FastMath.abs(w) + FastMath.abs(q) + FastMath.abs(x) +
-                  FastMath.abs(y) + FastMath.abs(z))
+                Precision.EPSILON * norm * (abs(w) + abs(q) + abs(x) +
+                  abs(y) + abs(z))
               } else vr
               val c = ComplexDouble(x * r - z * ra + q * sa, x * s - z * sa - q * ra)
                 .div(ComplexDouble(adjustedVr, vi))
               matrixT[i][idx - 1] = c.re
               matrixT[i][idx] = c.im
-              if (FastMath.abs(x) > (FastMath.abs(z) + FastMath.abs(q))) {
+              if (abs(x) > (abs(z) + abs(q))) {
                 matrixT[i + 1][idx - 1] = (-ra - w * matrixT[i][idx - 1] + q * matrixT[i][idx]) / x
                 matrixT[i + 1][idx] = (-sa - w * matrixT[i][idx] - q * matrixT[i][idx - 1]) / x
               } else {
@@ -776,7 +789,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.set
               }
             }
             // Overflow control
-            val t = maxOf(FastMath.abs(matrixT[i][idx - 1]), FastMath.abs(matrixT[i][idx]))
+            val t = maxOf(abs(matrixT[i][idx - 1]), abs(matrixT[i][idx]))
             if ((Precision.EPSILON * t) * t > 1) {
               for (j in i..idx) {
                 matrixT[j][idx - 1] /= t

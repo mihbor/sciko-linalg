@@ -2,6 +2,8 @@ package ltd.mbor.sciko.linalg
 
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.ndarray
+import kotlin.math.abs
+import kotlin.math.sqrt
 
 /**
  * Class transforming a general real matrix to Hessenberg form.
@@ -138,7 +140,7 @@ class HessenbergTransformer(matrix: RealMatrix) {
       // Scale column.
       var scale = 0.0
       for (i in m..high) {
-        scale += FastMath.abs(householderVectors[i][m - 1])
+        scale += abs(householderVectors[i][m - 1])
       }
       if (!Precision.equals(scale, 0.0)) {
         // Compute Householder transformation.
@@ -147,7 +149,7 @@ class HessenbergTransformer(matrix: RealMatrix) {
           ort[i] = householderVectors[i][m - 1] / scale
           h += ort[i] * ort[i]
         }
-        val g = if (ort[m] > 0) -FastMath.sqrt(h) else FastMath.sqrt(h)
+        val g = if (ort[m] > 0) -sqrt(h) else sqrt(h)
         h -= ort[m] * g
         ort[m] -= g
         // Apply Householder similarity transformation

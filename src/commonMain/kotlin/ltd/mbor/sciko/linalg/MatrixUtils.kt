@@ -1,6 +1,8 @@
 package ltd.mbor.sciko.linalg
 
 import org.jetbrains.kotlinx.multik.ndarray.data.get
+import kotlin.math.abs
+import kotlin.math.max
 
 class MatrixUtils {
   companion object {
@@ -47,8 +49,8 @@ class MatrixUtils {
         for (j in i + 1..<rows) {
           val mij: Double = matrix[i][j]
           val mji: Double = matrix[j][i]
-          if (FastMath.abs(mij - mji) >
-            FastMath.max(FastMath.abs(mij), FastMath.abs(mji))*relativeTolerance
+          if (abs(mij - mji) >
+            max(abs(mij), abs(mji))*relativeTolerance
           ) {
             if (raiseException) {
               throw NonSymmetricMatrixException(i, j, relativeTolerance)

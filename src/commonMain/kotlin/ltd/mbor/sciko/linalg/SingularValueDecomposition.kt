@@ -4,9 +4,18 @@ import ltd.mbor.sciko.linalg.Precision.Companion.SAFE_MIN
 import org.jetbrains.kotlinx.multik.api.linalg.dot
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.ndarray
+import org.jetbrains.kotlinx.multik.ndarray.data.D1
+import org.jetbrains.kotlinx.multik.ndarray.data.D2
+import org.jetbrains.kotlinx.multik.ndarray.data.Dimension
+import org.jetbrains.kotlinx.multik.ndarray.data.MultiArray
 import org.jetbrains.kotlinx.multik.ndarray.data.get
 import org.jetbrains.kotlinx.multik.ndarray.data.set
 import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
+import kotlin.math.abs
+import kotlin.math.hypot
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.sqrt
 
 
 /**
@@ -110,16 +119,16 @@ class SingularValueDecomposition(matrix: RealMatrix) {
     val work = DoubleArray(m)
     // Reduce A to bidiagonal form, storing the diagonal elements
     // in s and the super-diagonal elements in e.
-    val nct = FastMath.min(m - 1, n)
-    val nrt = FastMath.max(0, n - 2)
-    for (k in 0 until FastMath.max(nct, nrt)) {
+    val nct = min(m - 1, n)
+    val nrt = max(0, n - 2)
+    for (k in 0 until max(nct, nrt)) {
       if (k < nct) {
         // Compute the transformation for the k-th column and
         // place the k-th diagonal in s[k].
         // Compute 2-norm of k-th column without under/overflow.
         singularValues[k] = 0.0
         for (i in k until m) {
-          singularValues[k] = FastMath.hypot(singularValues[k], A[i][k])
+          singularValues[k] = hypot(singularValues[k], A[i][k])
         }
         if (singularValues[k] != 0.0) {
           if (A[k][k] < 0) {
@@ -163,7 +172,7 @@ class SingularValueDecomposition(matrix: RealMatrix) {
         // Compute 2-norm without under/overflow.
         e[k] = 0.0
         for (i in k + 1 until n) {
-          e[k] = FastMath.hypot(e[k], e[i])
+          e[k] = hypot(e[k], e[i])
         }
         if (e[k] != 0.0) {
           if (e[k + 1] < 0) {
@@ -283,17 +292,17 @@ class SingularValueDecomposition(matrix: RealMatrix) {
       // kase = 4     if e(p-1) is negligible (convergence).
       k = p - 2
       while (k >= 0) {
-        val threshold = TINY + EPS * (FastMath.abs(
+        val threshold = TINY + EPS * (abs(
           singularValues[k]
         ) +
-          FastMath.abs(singularValues[k + 1]))
+          abs(singularValues[k + 1]))
         // the following condition is written this way in order
         // to break out of the loop when NaN occurs, writing it
-        // as "if (FastMath.abs(e[k]) <= threshold)" would loop
+        // as "if (abs(e[k]) <= threshold)" would loop
         // indefinitely in case of NaNs because comparison on NaNs
         // always return false, regardless of what is checked
         // see issue MATH-947
-        if (!(FastMath.abs(e[k]) > threshold)) {
+        if (!(abs(e[k]) > threshold)) {
           e[k] = 0.0
           break
         }
@@ -307,9 +316,9 @@ class SingularValueDecomposition(matrix: RealMatrix) {
           if (ks == k) {
             break
           }
-          val t = (if (ks != p) FastMath.abs(e[ks]) else 0.0) +
-            (if (ks != k + 1) FastMath.abs(e[ks - 1]) else 0.0)
-          if (FastMath.abs(singularValues[ks]) <= TINY + EPS * t) {
+          val t = (if (ks != p) abs(e[ks]) else 0.0) +
+            (if (ks != k + 1) abs(e[ks - 1]) else 0.0)
+          if (abs(singularValues[ks]) <= TINY + EPS * t) {
             singularValues[ks] = 0.0
             break
           }
@@ -332,7 +341,7 @@ class SingularValueDecomposition(matrix: RealMatrix) {
           e[p - 2] = 0.0
           var j = p - 2
           while (j >= k) {
-            var t = FastMath.hypot(singularValues[j], f)
+            var t = hypot(singularValues[j], f)
             val cs = singularValues[j] / t
             val sn = f / t
             singularValues[j] = t
@@ -356,7 +365,7 @@ class SingularValueDecomposition(matrix: RealMatrix) {
           e[k - 1] = 0.0
           var j = k
           while (j < p) {
-            var t = FastMath.hypot(singularValues[j], f)
+            var t = hypot(singularValues[j], f)
             val cs = singularValues[j] / t
             val sn = f / t
             singularValues[j] = t
@@ -375,19 +384,19 @@ class SingularValueDecomposition(matrix: RealMatrix) {
 
         3 -> {
           // Calculate the shift.
-          val maxPm1Pm2 = FastMath.max(
-            FastMath.abs(singularValues[p - 1]),
-            FastMath.abs(singularValues[p - 2])
+          val maxPm1Pm2 = max(
+            abs(singularValues[p - 1]),
+            abs(singularValues[p - 2])
           )
-          val scale = FastMath.max(
-            FastMath.max(
-              FastMath.max(
+          val scale = max(
+            max(
+              max(
                 maxPm1Pm2,
-                FastMath.abs(e[p - 2])
+                abs(e[p - 2])
               ),
-              FastMath.abs(singularValues[k])
+              abs(singularValues[k])
             ),
-            FastMath.abs(e[k])
+            abs(e[k])
           )
           val sp = singularValues[p - 1] / scale
           val spm1 = singularValues[p - 2] / scale
@@ -400,7 +409,7 @@ class SingularValueDecomposition(matrix: RealMatrix) {
           if (b != 0.0 ||
             c != 0.0
           ) {
-            shift = FastMath.sqrt(b * b + c)
+            shift = sqrt(b * b + c)
             if (b < 0) {
               shift = -shift
             }
@@ -411,7 +420,7 @@ class SingularValueDecomposition(matrix: RealMatrix) {
           // Chase zeros.
           var j = k
           while (j < p - 1) {
-            var t = FastMath.hypot(f, g)
+            var t = hypot(f, g)
             var cs = f / t
             var sn = g / t
             if (j != k) {
@@ -428,7 +437,7 @@ class SingularValueDecomposition(matrix: RealMatrix) {
               V[i][j] = t
               i++
             }
-            t = FastMath.hypot(f, g)
+            t = hypot(f, g)
             cs = f / t
             sn = g / t
             singularValues[j] = t
@@ -493,9 +502,9 @@ class SingularValueDecomposition(matrix: RealMatrix) {
       }
     }
     // Set the small value tolerance used to calculate rank and pseudo-inverse
-    tol = FastMath.max(
+    tol = max(
       m * singularValues[0] * EPS,
-      FastMath.sqrt(SAFE_MIN)
+      sqrt(SAFE_MIN)
     )
     if (!transposed) {
       u = mk.ndarray(U)
@@ -545,7 +554,7 @@ class SingularValueDecomposition(matrix: RealMatrix) {
    * @return the diagonal elements of the  matrix
    */
   fun getSingularValues(): DoubleArray {
-    return singularValues.clone()
+    return singularValues.copyOf()
   }
 
   val vT: RealMatrix
@@ -700,8 +709,15 @@ class SingularValueDecomposition(matrix: RealMatrix) {
      * @throws org.apache.commons.math3.exception.DimensionMismatchException
      * if the matrices dimensions do not match.
      */
-    @JvmName("solveRealVector")
-    fun solve(b: RealVector): RealVector {
+    inline fun <reified D: Dimension> solve(b: MultiArray<Double, out D>): MultiArray<Double, D> {
+      return when(D::class) {
+        D1::class -> solveVector(b as MultiArray<Double, D1>) as MultiArray<Double, D>
+        D2::class -> solveMatrix(b as MultiArray<Double, D2>) as MultiArray<Double, D>
+        else -> throw IllegalArgumentException("Dimension ${D::class} not supported")
+      }
+    }
+
+    fun solveVector(b: RealVector): RealVector {
       return pseudoInverse dot b
     }
 
@@ -718,8 +734,7 @@ class SingularValueDecomposition(matrix: RealMatrix) {
      * @throws org.apache.commons.math3.exception.DimensionMismatchException
      * if the matrices dimensions do not match.
      */
-    @JvmName("solveRealMatrix")
-    fun solve(b: RealMatrix): RealMatrix {
+    fun solveMatrix(b: RealMatrix): RealMatrix {
       return pseudoInverse dot b
     }
 

@@ -4,9 +4,14 @@ import org.jetbrains.kotlinx.multik.api.identity
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.ndarray
 import org.jetbrains.kotlinx.multik.api.zeros
+import org.jetbrains.kotlinx.multik.ndarray.data.D1
+import org.jetbrains.kotlinx.multik.ndarray.data.D2
+import org.jetbrains.kotlinx.multik.ndarray.data.Dimension
+import org.jetbrains.kotlinx.multik.ndarray.data.MultiArray
 import org.jetbrains.kotlinx.multik.ndarray.data.get
 import org.jetbrains.kotlinx.multik.ndarray.data.set
 import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
+import kotlin.math.abs
 
 
 /**
@@ -38,7 +43,7 @@ import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
  *
  * @since 2.0 (changed to concrete class in 3.0)
  */
-class LUDecomposition @JvmOverloads constructor(matrix: RealMatrix, singularityThreshold: Double = DEFAULT_TOO_SMALL) {
+class LUDecomposition constructor(matrix: RealMatrix, singularityThreshold: Double = DEFAULT_TOO_SMALL) {
   /** Entries of LU decomposition.  */
   private val lu: Array<DoubleArray>
 
@@ -115,13 +120,13 @@ class LUDecomposition @JvmOverloads constructor(matrix: RealMatrix, singularityT
         }
         luRow[col] = sum
         // maintain best permutation choice
-        if (FastMath.abs(sum) > largest) {
-          largest = FastMath.abs(sum)
+        if (abs(sum) > largest) {
+          largest = abs(sum)
           max = row
         }
       }
       // Singularity check
-      if (FastMath.abs(lu[max][col]) < singularityThreshold) {
+      if (abs(lu[max][col]) < singularityThreshold) {
         singular = true
       } else {
         // Pivot if necessary
@@ -220,7 +225,7 @@ class LUDecomposition @JvmOverloads constructor(matrix: RealMatrix, singularityT
    * @see .getP
    */
   fun getPivot(): IntArray {
-    return pivot.clone()
+    return pivot.copyOf()
   }
 
   val determinant: Double
@@ -263,12 +268,17 @@ class LUDecomposition @JvmOverloads constructor(matrix: RealMatrix, singularityT
     /** Singularity indicator.  */
     private val singular: Boolean
   ) {
-    /** {@inheritDoc}  */
     val isNonSingular: Boolean get() = !singular
 
-    /** {@inheritDoc}  */
-    @JvmName("solveRealVector")
-    fun solve(b: RealVector): RealVector {
+    inline fun <reified D: Dimension> solve(b: MultiArray<Double, out D>): MultiArray<Double, D> {
+      return when(D::class) {
+        D1::class -> solveVector(b as MultiArray<Double, D1>) as MultiArray<Double, D>
+        D2::class -> solveMatrix(b as MultiArray<Double, D2>) as MultiArray<Double, D>
+        else -> throw IllegalArgumentException("Dimension ${D::class} not supported")
+      }
+    }
+
+    fun solveVector(b: RealVector): RealVector {
       val m = pivot.size
       if (b.dimension != m) {
         throw DimensionMismatchException(b.dimension, m)
@@ -299,9 +309,7 @@ class LUDecomposition @JvmOverloads constructor(matrix: RealMatrix, singularityT
       return mk.ndarray(bp)
     }
 
-    /** {@inheritDoc}  */
-    @JvmName("solveRealMatrix")
-    fun solve(b: RealMatrix): RealMatrix {
+    fun solveMatrix(b: RealMatrix): RealMatrix {
       val m = pivot.size
       if (b.rowDimension != m) {
         throw DimensionMismatchException(b.rowDimension, m)

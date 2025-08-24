@@ -11,6 +11,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.MutableMultiArray
 import org.jetbrains.kotlinx.multik.ndarray.data.set
 import org.jetbrains.kotlinx.multik.ndarray.operations.forEachMultiIndexed
 import org.jetbrains.kotlinx.multik.ndarray.operations.minus
+import kotlin.math.sqrt
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -152,7 +153,7 @@ class SingularValueDecompositionTest {
   }
 
   fun checkOrthogonal(m: RealMatrix) {
-    val mTm = m.transpose().dot(m)
+    val mTm = m.transpose() dot m
     val id = mk.identity<Double>(mTm.rowDimension)
     assertEquals(0.0, mTm.minus(id).norm, normTolerance)
   }
@@ -359,7 +360,7 @@ fun createOrthogonalMatrix(r: Random, size: Int): RealMatrix {
       for (dataIJ in dataI) {
         norm2 += dataIJ * dataIJ
       }
-      val inv = 1.0 / FastMath.sqrt(norm2)
+      val inv = 1.0 / sqrt(norm2)
       for (j in 0..<size) {
         dataI[j] *= inv
       }

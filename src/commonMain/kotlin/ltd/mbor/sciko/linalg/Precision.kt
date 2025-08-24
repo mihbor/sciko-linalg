@@ -1,5 +1,7 @@
 package ltd.mbor.sciko.linalg
 
+import kotlin.math.abs
+
 class Precision {
   companion object {
     /** Exponent offset in IEEE754 representation. */
@@ -9,7 +11,7 @@ class Precision {
      * However, OpenJDK (Sparc Solaris) cannot handle such small
      * constants: MATH-721
      */
-    val SAFE_MIN = java.lang.Double.longBitsToDouble((EXPONENT_OFFSET - 1022L) shl 52)
+    val SAFE_MIN = Double.fromBits((EXPONENT_OFFSET - 1022L) shl 52)
     /*
      *  This was previously expressed as = 0x1.0p-53;
      *  However, OpenJDK (Sparc Solaris) cannot handle such small
@@ -17,9 +19,9 @@ class Precision {
      */
     val EPSILON = Double.fromBits((EXPONENT_OFFSET - 53L) shl 52)
     /** Positive zero bits.  */
-    private val POSITIVE_ZERO_DOUBLE_BITS: Long = java.lang.Double.doubleToRawLongBits(+0.0)
+    private val POSITIVE_ZERO_DOUBLE_BITS: Long = +0.0.toRawBits()
     /** Negative zero bits.  */
-    private val NEGATIVE_ZERO_DOUBLE_BITS: Long = java.lang.Double.doubleToRawLongBits(-0.0)
+    private val NEGATIVE_ZERO_DOUBLE_BITS: Long = -0.0.toRawBits()
 
     /**
      * Returns `true` if there is no double value strictly between the
@@ -33,7 +35,7 @@ class Precision {
      * numbers or they are within range of each other.
      */
     fun equals(x: Double, y: Double, eps: Double): Boolean {
-      return equals(x, y, 1) || FastMath.abs(y - x) <= eps
+      return equals(x, y, 1) || abs(y - x) <= eps
     }
 
     /**
@@ -71,12 +73,12 @@ class Precision {
      * point values between `x` and `y`.
      */
     fun equals(x: Double, y: Double, maxUlps: Int): Boolean {
-      val xInt = java.lang.Double.doubleToRawLongBits(x)
-      val yInt = java.lang.Double.doubleToRawLongBits(y)
+      val xInt = x.toRawBits()
+      val yInt = y.toRawBits()
       val isEqual: Boolean
       if ((xInt >= 0) == (yInt >= 0)) {
         // number have same sign, there is no risk of overflow
-        isEqual = FastMath.abs(xInt - yInt) <= maxUlps
+        isEqual = abs(xInt - yInt) <= maxUlps
       } else {
         // number have opposite signs, take care of overflow
         val deltaPlus: Long
@@ -94,7 +96,7 @@ class Precision {
           isEqual = deltaMinus <= (maxUlps - deltaPlus)
         }
       }
-      return isEqual && !java.lang.Double.isNaN(x) && !java.lang.Double.isNaN(y)
+      return isEqual && !x.isNaN() && !y.isNaN()
     }
 
     /**

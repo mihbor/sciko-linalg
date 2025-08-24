@@ -3,10 +3,16 @@ package ltd.mbor.sciko.linalg
 import org.jetbrains.kotlinx.multik.api.identity
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.ndarray
+import org.jetbrains.kotlinx.multik.ndarray.data.D1
+import org.jetbrains.kotlinx.multik.ndarray.data.D2
+import org.jetbrains.kotlinx.multik.ndarray.data.Dimension
+import org.jetbrains.kotlinx.multik.ndarray.data.MultiArray
 import org.jetbrains.kotlinx.multik.ndarray.data.get
 import org.jetbrains.kotlinx.multik.ndarray.data.set
 import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
-import java.util.*
+import kotlin.math.abs
+import kotlin.math.min
+import kotlin.math.sqrt
 
 /**
  * Calculates the QR-decomposition of a matrix.
@@ -38,7 +44,7 @@ import java.util.*
  *
  * @since 1.2 (changed to concrete class in 3.0)
  */
-open class QRDecomposition @JvmOverloads constructor(
+open class QRDecomposition constructor(
   matrix: RealMatrix,
   /** Singularity threshold.  */
   private val threshold: Double = 0.0
@@ -84,7 +90,7 @@ open class QRDecomposition @JvmOverloads constructor(
     val m: Int = matrix.rowDimension
     val n: Int = matrix.columnDimension
     qrt = matrix.transpose().getData()
-    rDiag = DoubleArray(FastMath.min(m, n))
+    rDiag = DoubleArray(min(m, n))
     cachedQ = null
     cachedQT = null
     cachedR = null
@@ -97,7 +103,7 @@ open class QRDecomposition @JvmOverloads constructor(
    * @since 3.2
    */
   protected open fun decompose(matrix: Array<DoubleArray>) {
-    for (minor in 0 until FastMath.min(matrix.size, matrix[0].size)) {
+    for (minor in 0 until min(matrix.size, matrix[0].size)) {
       performHouseholderReflection(minor, matrix)
     }
   }
@@ -121,7 +127,7 @@ open class QRDecomposition @JvmOverloads constructor(
       val c = qrtMinor[row]
       xNormSqr += c * c
     }
-    val a: Double = if ((qrtMinor[minor] > 0)) -FastMath.sqrt(xNormSqr) else FastMath.sqrt(xNormSqr)
+    val a: Double = if ((qrtMinor[minor] > 0)) -sqrt(xNormSqr) else sqrt(xNormSqr)
     rDiag[minor] = a
     if (a != 0.0) {
       /*
@@ -174,7 +180,7 @@ open class QRDecomposition @JvmOverloads constructor(
         val m = qrt[0].size
         val ra = Array(m) { DoubleArray(n) }
         // copy the diagonal from rDiag and the upper triangle of qr
-        for (row in FastMath.min(m, n) - 1 downTo 0) {
+        for (row in min(m, n) - 1 downTo 0) {
           ra[row][row] = rDiag[row]
           for (col in row + 1 until n) {
             ra[row][col] = qrt[col][row]
@@ -216,10 +222,10 @@ open class QRDecomposition @JvmOverloads constructor(
               * applying the Householder transformations Q_(m-1),Q_(m-2),...,Q1 in
               * succession to the result
               */
-        for (minor in m - 1 downTo FastMath.min(m, n)) {
+        for (minor in m - 1 downTo min(m, n)) {
           qta[minor][minor] = 1.0
         }
-        for (minor in FastMath.min(m, n) - 1 downTo 0) {
+        for (minor in min(m, n) - 1 downTo 0) {
           val qrtMinor = qrt[minor]
           qta[minor][minor] = 1.0
           if (qrtMinor[minor] != 0.0) {
@@ -255,7 +261,7 @@ open class QRDecomposition @JvmOverloads constructor(
         val m = qrt[0].size
         val ha = Array(m) { DoubleArray(n) }
         for (i in 0 until m) {
-          for (j in 0 until FastMath.min(i + 1, n)) {
+          for (j in 0 until min(i + 1, n)) {
             ha[i][j] = qrt[j][i] / -rDiag[j]
           }
         }
@@ -305,15 +311,22 @@ open class QRDecomposition @JvmOverloads constructor(
       /** {@inheritDoc}  */
       get() {
         for (diag in rDiag) {
-          if (FastMath.abs(diag) <= threshold) {
+          if (abs(diag) <= threshold) {
             return false
           }
         }
         return true
       }
 
-    @JvmName("solveRealVector")
-    fun solve(b: RealVector): RealVector {
+    inline fun <reified D: Dimension> solve(b: MultiArray<Double, out D>): MultiArray<Double, D> {
+      return when(D::class) {
+        D1::class -> solveVector(b as MultiArray<Double, D1>) as MultiArray<Double, D>
+        D2::class -> solveMatrix(b as MultiArray<Double, D2>) as MultiArray<Double, D>
+        else -> throw IllegalArgumentException("Dimension ${D::class} not supported")
+      }
+    }
+
+    fun solveVector(b: RealVector): RealVector {
       val n = qrt.size
       val m = qrt[0].size
       if (b.dimension != m) {
@@ -325,7 +338,7 @@ open class QRDecomposition @JvmOverloads constructor(
       val x = DoubleArray(n)
       val y: DoubleArray = b.toArray()
       // apply Householder transforms to solve Q.y = b
-      for (minor in 0 until FastMath.min(m, n)) {
+      for (minor in 0 until min(m, n)) {
         val qrtMinor = qrt[minor]
         var dotProduct = 0.0
         for (row in minor until m) {
@@ -349,8 +362,7 @@ open class QRDecomposition @JvmOverloads constructor(
       return mk.ndarray(x)
     }
 
-    @JvmName("solveRealMatrix")
-    fun solve(b: RealMatrix): RealMatrix {
+    fun solveMatrix(b: RealMatrix): RealMatrix {
       val n = qrt.size
       val m = qrt[0].size
       if (b.rowDimension != m) {
@@ -367,16 +379,16 @@ open class QRDecomposition @JvmOverloads constructor(
       val alpha = DoubleArray(blockSize)
       for (kBlock in 0 until cBlocks) {
         val kStart = kBlock * blockSize
-        val kEnd: Int = FastMath.min(kStart + blockSize, columns)
+        val kEnd: Int = min(kStart + blockSize, columns)
         val kWidth = kEnd - kStart
         // get the right hand side vector
 //        b.copySubMatrix(0, m - 1, kStart, kEnd - 1, y)
         val y = mk.ndarray(b[0..m-1, kStart..kEnd-1].toArray())
         // apply Householder transforms to solve Q.y = b
-        for (minor in 0 until FastMath.min(m, n)) {
+        for (minor in 0 until min(m, n)) {
           val qrtMinor = qrt[minor]
           val factor = 1.0 / (rDiag[minor] * qrtMinor[minor])
-          Arrays.fill(alpha, 0, kWidth, 0.0)
+          alpha.fill(0.0, 0, kWidth)
           for (row in minor until m) {
             val d = qrtMinor[row]
             val yRow = y[row]
@@ -434,11 +446,11 @@ open class QRDecomposition @JvmOverloads constructor(
       var blockIndex = 0
       for (iBlock in 0 until blockRows) {
         val pStart: Int = iBlock * BLOCK_SIZE
-        val pEnd = FastMath.min(pStart + BLOCK_SIZE, rows)
+        val pEnd = min(pStart + BLOCK_SIZE, rows)
         val iHeight = pEnd - pStart
         for (jBlock in 0 until blockColumns) {
           val qStart: Int = jBlock * BLOCK_SIZE
-          val qEnd = FastMath.min(qStart + BLOCK_SIZE, columns)
+          val qEnd = min(qStart + BLOCK_SIZE, columns)
           val jWidth = qEnd - qStart
           blocks[blockIndex] = DoubleArray(iHeight * jWidth)
           ++blockIndex
@@ -455,7 +467,7 @@ open class QRDecomposition @JvmOverloads constructor(
       val lastColumns: Int = columns - (blockColumns - 1) * BLOCK_SIZE
       for (iBlock in 0 until blockRows) {
         val pStart = iBlock * BLOCK_SIZE
-        val pEnd = FastMath.min(pStart + BLOCK_SIZE, rows)
+        val pEnd = min(pStart + BLOCK_SIZE, rows)
         var regularPos = 0
         var lastPos = 0
         for (p in pStart until pEnd) {
@@ -463,10 +475,10 @@ open class QRDecomposition @JvmOverloads constructor(
           var blockIndex: Int = iBlock * blockColumns
           var dataPos = 0
           for (jBlock in 0 until blockColumns - 1) {
-            System.arraycopy(get(blockIndex++), regularPos, dataP, dataPos, BLOCK_SIZE)
+            get(blockIndex++)!!.copyInto(dataP, dataPos, regularPos, BLOCK_SIZE)
             dataPos += BLOCK_SIZE
           }
-          System.arraycopy(get(blockIndex), lastPos, dataP, dataPos, lastColumns)
+          get(blockIndex)!!.copyInto(dataP, dataPos, lastPos, lastColumns)
           regularPos += BLOCK_SIZE
           lastPos += lastColumns
         }

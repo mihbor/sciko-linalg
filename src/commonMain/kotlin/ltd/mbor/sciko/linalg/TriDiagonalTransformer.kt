@@ -3,7 +3,7 @@ package ltd.mbor.sciko.linalg
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.ndarray
 import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
-import java.util.*
+import kotlin.math.sqrt
 
 
 class TriDiagonalTransformer {
@@ -179,7 +179,7 @@ class TriDiagonalTransformer {
         val c = hK[j]
         xNormSqr += c*c
       }
-      val a = if (hK[k + 1] > 0) -FastMath.sqrt(xNormSqr) else FastMath.sqrt(xNormSqr)
+      val a = if (hK[k + 1] > 0) -sqrt(xNormSqr) else sqrt(xNormSqr)
       secondary[k] = a
       if (a != 0.0) {
         // apply Householder transform from left and right simultaneously
@@ -189,7 +189,7 @@ class TriDiagonalTransformer {
         // this loop is written in such a way
         //   1) only the upper triangular part of the matrix is accessed
         //   2) access is cache-friendly for a matrix stored in rows
-        Arrays.fill(z, k + 1, m, 0.0)
+        z.fill(0.0, k + 1, m)
         for (i in k + 1..<m) {
           val hI: DoubleArray = householderVectors[i]
           val hKI = hK[i]

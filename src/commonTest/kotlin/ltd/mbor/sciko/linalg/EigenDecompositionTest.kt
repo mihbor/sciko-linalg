@@ -7,9 +7,9 @@ import org.jetbrains.kotlinx.multik.api.ndarray
 import org.jetbrains.kotlinx.multik.ndarray.operations.div
 import org.jetbrains.kotlinx.multik.ndarray.operations.minus
 import org.jetbrains.kotlinx.multik.ndarray.operations.plus
-import org.junit.Assert
 import kotlin.math.sqrt
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class EigenDecompositionTest {
 
@@ -32,7 +32,7 @@ class EigenDecompositionTest {
   fun testDimension1() {
     val matrix: RealMatrix = mk.ndarray(arrayOf(doubleArrayOf(1.5)))
     val ed = EigenDecomposition(matrix)
-    Assert.assertEquals(1.5, ed.getRealEigenvalue(0), 1.0e-15)
+    assertEquals(1.5, ed.getRealEigenvalue(0), 1.0e-15)
   }
 
   @Test
@@ -44,8 +44,8 @@ class EigenDecompositionTest {
       )
     )
     val ed = EigenDecomposition(matrix)
-    Assert.assertEquals(75.0, ed.getRealEigenvalue(0), 1.0e-15)
-    Assert.assertEquals(50.0, ed.getRealEigenvalue(1), 1.0e-15)
+    assertEquals(75.0, ed.getRealEigenvalue(0), 1.0e-15)
+    assertEquals(50.0, ed.getRealEigenvalue(1), 1.0e-15)
   }
 
   @Test
@@ -58,9 +58,9 @@ class EigenDecompositionTest {
       )
     )
     val ed = EigenDecomposition(matrix)
-    Assert.assertEquals(50000.0, ed.getRealEigenvalue(0), 3.0e-11)
-    Assert.assertEquals(12500.0, ed.getRealEigenvalue(1), 3.0e-11)
-    Assert.assertEquals(3125.0, ed.getRealEigenvalue(2), 3.0e-11)
+    assertEquals(50000.0, ed.getRealEigenvalue(0), 3.0e-11)
+    assertEquals(12500.0, ed.getRealEigenvalue(1), 3.0e-11)
+    assertEquals(3125.0, ed.getRealEigenvalue(2), 3.0e-11)
   }
 
   @Test
@@ -73,9 +73,9 @@ class EigenDecompositionTest {
       )
     )
     val ed = EigenDecomposition(matrix)
-    Assert.assertEquals(70.0, ed.getRealEigenvalue(0), 3.0e-11)
-    Assert.assertEquals(0.0, ed.getRealEigenvalue(1), 3.0e-11)
-    Assert.assertEquals(0.0, ed.getRealEigenvalue(2), 3.0e-11)
+    assertEquals(70.0, ed.getRealEigenvalue(0), 3.0e-11)
+    assertEquals(0.0, ed.getRealEigenvalue(1), 3.0e-11)
+    assertEquals(0.0, ed.getRealEigenvalue(2), 3.0e-11)
   }
 
   @Test
@@ -89,10 +89,10 @@ class EigenDecompositionTest {
       )
     )
     val ed = EigenDecomposition(matrix)
-    Assert.assertEquals(1.0, ed.getRealEigenvalue(0), 1.0e-15)
-    Assert.assertEquals(0.4, ed.getRealEigenvalue(1), 1.0e-15)
-    Assert.assertEquals(0.2, ed.getRealEigenvalue(2), 1.0e-15)
-    Assert.assertEquals(0.1, ed.getRealEigenvalue(3), 1.0e-15)
+    assertEquals(1.0, ed.getRealEigenvalue(0), 1.0e-15)
+    assertEquals(0.4, ed.getRealEigenvalue(1), 1.0e-15)
+    assertEquals(0.2, ed.getRealEigenvalue(2), 1.0e-15)
+    assertEquals(0.1, ed.getRealEigenvalue(3), 1.0e-15)
   }
 
   @Test
@@ -106,10 +106,10 @@ class EigenDecompositionTest {
       )
     )
     val ed = EigenDecomposition(matrix)
-    Assert.assertEquals(1.0, ed.getRealEigenvalue(0), 1.0e-15)
-    Assert.assertEquals(0.4, ed.getRealEigenvalue(1), 1.0e-15)
-    Assert.assertEquals(0.2, ed.getRealEigenvalue(2), 1.0e-15)
-    Assert.assertEquals(0.1, ed.getRealEigenvalue(3), 1.0e-15)
+    assertEquals(1.0, ed.getRealEigenvalue(0), 1.0e-15)
+    assertEquals(0.4, ed.getRealEigenvalue(1), 1.0e-15)
+    assertEquals(0.2, ed.getRealEigenvalue(2), 1.0e-15)
+    assertEquals(0.1, ed.getRealEigenvalue(3), 1.0e-15)
   }
 
   // the following test triggered an ArrayIndexOutOfBoundsException in commons-math 2.0
@@ -137,8 +137,8 @@ class EigenDecompositionTest {
     val decomposition = EigenDecomposition(mainTridiagonal, secondaryTridiagonal)
     val eigenValues = decomposition.getRealEigenvalues()
     for (i in refEigenValues.indices) {
-      Assert.assertEquals(refEigenValues[i], eigenValues[i], 1.0e-5)
-      Assert.assertEquals(0.0, (refEigenVectors[i]!! - decomposition.getEigenvector(i)).norm(), 2.0e-7)
+      assertEquals(refEigenValues[i], eigenValues[i], 1.0e-5)
+      assertEquals(0.0, (refEigenVectors[i]!! - decomposition.getEigenvector(i)).norm(), 2.0e-7)
     }
   }
 
@@ -175,11 +175,11 @@ class EigenDecompositionTest {
     decomposition = EigenDecomposition(mainTridiagonal, secondaryTridiagonal)
     val eigenValues = decomposition.getRealEigenvalues()
     for (i in refEigenValues.indices) {
-      Assert.assertEquals(refEigenValues[i], eigenValues[i], 1.0e-3)
+      assertEquals(refEigenValues[i], eigenValues[i], 1.0e-3)
       if (refEigenVectors[i]!!.dot(decomposition.getEigenvector(i)) < 0) {
-        Assert.assertEquals(0.0, refEigenVectors[i]!!.plus(decomposition.getEigenvector(i)).norm(), 1.0e-5)
+        assertEquals(0.0, refEigenVectors[i]!!.plus(decomposition.getEigenvector(i)).norm(), 1.0e-5)
       } else {
-        Assert.assertEquals(0.0, refEigenVectors[i]!!.minus(decomposition.getEigenvector(i)).norm(), 1.0e-5)
+        assertEquals(0.0, refEigenVectors[i]!!.minus(decomposition.getEigenvector(i)).norm(), 1.0e-5)
       }
     }
   }
@@ -214,11 +214,11 @@ class EigenDecompositionTest {
     decomposition = EigenDecomposition(mainTridiagonal, secondaryTridiagonal)
     val eigenValues = decomposition.getRealEigenvalues()
     for (i in refEigenValues.indices) {
-      Assert.assertEquals(refEigenValues[i], eigenValues[i], 1.0e-4)
+      assertEquals(refEigenValues[i], eigenValues[i], 1.0e-4)
       if (refEigenVectors[i]!!.dot(decomposition.getEigenvector(i)) < 0) {
-        Assert.assertEquals(0.0, refEigenVectors[i]!!.plus(decomposition.getEigenvector(i)).norm(), 1.0e-5)
+        assertEquals(0.0, refEigenVectors[i]!!.plus(decomposition.getEigenvector(i)).norm(), 1.0e-5)
       } else {
-        Assert.assertEquals(0.0, refEigenVectors[i]!!.minus(decomposition.getEigenvector(i)).norm(), 1.0e-5)
+        assertEquals(0.0, refEigenVectors[i]!!.minus(decomposition.getEigenvector(i)).norm(), 1.0e-5)
       }
     }
   }

@@ -11,6 +11,11 @@ repositories {
 }
 
 kotlin {
+  jvm()
+  jvmToolchain(21)
+  js(IR) {
+    browser()
+  }
   sourceSets {
     val commonMain by getting {
       dependencies {
@@ -23,7 +28,10 @@ kotlin {
         implementation(kotlin("test"))
       }
     }
+    val jvmTest by getting {
+      dependencies {
+        implementation(kotlin("test"))
+      }
+    }
   }
-  jvm()
-  jvmToolchain(21)
 }

@@ -6,7 +6,6 @@ import org.jetbrains.kotlinx.multik.ndarray.data.*
 import org.jetbrains.kotlinx.multik.ndarray.operations.toArray
 import org.jetbrains.kotlinx.multik.ndarray.operations.toDoubleArray
 
-typealias FastMath = Math
 typealias RealMatrix = MultiArray<Double, D2>
 typealias RealVector = MultiArray<Double, D1>
 typealias ArrayRealVector = MultiArray<Double, D1>

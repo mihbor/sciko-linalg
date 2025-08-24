@@ -2,6 +2,9 @@ package ltd.mbor.sciko.linalg
 
 import org.jetbrains.kotlinx.multik.api.mk
 import org.jetbrains.kotlinx.multik.api.ndarray
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.sqrt
 
 /**
  * Class transforming a general real matrix to Schur form.
@@ -129,13 +132,13 @@ class SchurTransformer(matrix: RealMatrix) {
           matrixT[iu][iu] += shift.exShift
           matrixT[iu - 1][iu - 1] += shift.exShift
           if (q >= 0) {
-            var z = FastMath.sqrt(FastMath.abs(q))
+            var z = sqrt(abs(q))
             z = if (p >= 0) p + z else p - z
             val x = matrixT[iu][iu - 1]
-            val s = FastMath.abs(x) + FastMath.abs(z)
+            val s = abs(x) + abs(z)
             p = x/s
             q = z/s
-            val r = FastMath.sqrt(p*p + q*q)
+            val r = sqrt(p*p + q*q)
             p /= r
             q /= r
             // Row modification
@@ -184,8 +187,8 @@ class SchurTransformer(matrix: RealMatrix) {
     var norm = 0.0
     for (i in matrixT.indices) {
       // as matrix T is (quasi-)triangular, also take the sub-diagonal element into account
-      for (j in FastMath.max(i - 1, 0) until matrixT.size) {
-        norm += FastMath.abs(matrixT[i][j])
+      for (j in max(i - 1, 0) until matrixT.size) {
+        norm += abs(matrixT[i][j])
       }
     }
     return norm
@@ -200,11 +203,11 @@ class SchurTransformer(matrix: RealMatrix) {
   private fun findSmallSubDiagonalElement(startIdx: Int, norm: Double): Int {
     var l = startIdx
     while (l > 0) {
-      var s = FastMath.abs(matrixT[l - 1][l - 1]) + FastMath.abs(matrixT[l][l])
+      var s = abs(matrixT[l - 1][l - 1]) + abs(matrixT[l][l])
       if (s == 0.0) {
         s = norm
       }
-      if (FastMath.abs(matrixT[l][l - 1]) < epsilon * s) {
+      if (abs(matrixT[l][l - 1]) < epsilon * s) {
         break
       }
       l--
@@ -234,7 +237,7 @@ class SchurTransformer(matrix: RealMatrix) {
       for (i in 0..idx) {
         matrixT[i][i] -= shift.x
       }
-      val s = FastMath.abs(matrixT[idx][idx - 1]) + FastMath.abs(matrixT[idx - 1][idx - 2])
+      val s = abs(matrixT[idx][idx - 1]) + abs(matrixT[idx - 1][idx - 2])
       shift.x = 0.75 * s
       shift.y = 0.75 * s
       shift.w = -0.4375 * s * s
@@ -244,7 +247,7 @@ class SchurTransformer(matrix: RealMatrix) {
       var s = (shift.y - shift.x) / 2.0
       s = s * s + shift.w
       if (s > 0.0) {
-        s = FastMath.sqrt(s)
+        s = sqrt(s)
         if (shift.y < shift.x) {
           s = -s
         }
@@ -281,10 +284,10 @@ class SchurTransformer(matrix: RealMatrix) {
       if (im == il) {
         break
       }
-      val lhs = FastMath.abs(matrixT[im][im - 1]) * (FastMath.abs(hVec[1]) + FastMath.abs(hVec[2]))
-      val rhs = FastMath.abs(hVec[0]) * (FastMath.abs(matrixT[im - 1][im - 1]) +
-        FastMath.abs(z) +
-        FastMath.abs(matrixT[im + 1][im + 1]))
+      val lhs = abs(matrixT[im][im - 1]) * (abs(hVec[1]) + abs(hVec[2]))
+      val rhs = abs(hVec[0]) * (abs(matrixT[im - 1][im - 1]) +
+        abs(z) +
+        abs(matrixT[im + 1][im + 1]))
       if (lhs < epsilon * rhs) {
         break
       }
@@ -312,7 +315,7 @@ class SchurTransformer(matrix: RealMatrix) {
         p = matrixT[k][k - 1]
         q = matrixT[k + 1][k - 1]
         r = if (notLast) matrixT[k + 2][k - 1] else 0.0
-        shift.x = FastMath.abs(p) + FastMath.abs(q) + FastMath.abs(r)
+        shift.x = abs(p) + abs(q) + abs(r)
         if (Precision.equals(shift.x, 0.0, epsilon)) {
           continue
         }
@@ -320,7 +323,7 @@ class SchurTransformer(matrix: RealMatrix) {
         q /= shift.x
         r /= shift.x
       }
-      var s = FastMath.sqrt(p * p + q * q + r * r)
+      var s = sqrt(p * p + q * q + r * r)
       if (p < 0.0) {
         s = -s
       }
