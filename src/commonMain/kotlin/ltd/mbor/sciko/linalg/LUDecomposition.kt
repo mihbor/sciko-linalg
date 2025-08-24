@@ -267,18 +267,10 @@ class LUDecomposition constructor(matrix: RealMatrix, singularityThreshold: Doub
     private val pivot: IntArray,
     /** Singularity indicator.  */
     private val singular: Boolean
-  ) {
+  ): ltd.mbor.sciko.linalg.Solver() {
     val isNonSingular: Boolean get() = !singular
 
-    inline fun <reified D: Dimension> solve(b: MultiArray<Double, out D>): MultiArray<Double, D> {
-      return when(D::class) {
-        D1::class -> solveVector(b as MultiArray<Double, D1>) as MultiArray<Double, D>
-        D2::class -> solveMatrix(b as MultiArray<Double, D2>) as MultiArray<Double, D>
-        else -> throw IllegalArgumentException("Dimension ${D::class} not supported")
-      }
-    }
-
-    fun solveVector(b: RealVector): RealVector {
+    override fun solveVector(b: RealVector): RealVector {
       val m = pivot.size
       if (b.dimension != m) {
         throw DimensionMismatchException(b.dimension, m)
@@ -309,7 +301,7 @@ class LUDecomposition constructor(matrix: RealMatrix, singularityThreshold: Doub
       return mk.ndarray(bp)
     }
 
-    fun solveMatrix(b: RealMatrix): RealMatrix {
+    override fun solveMatrix(b: RealMatrix): RealMatrix {
       val m = pivot.size
       if (b.rowDimension != m) {
         throw DimensionMismatchException(b.rowDimension, m)

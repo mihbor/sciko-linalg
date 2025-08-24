@@ -306,7 +306,7 @@ open class QRDecomposition constructor(
     private val rDiag: DoubleArray,
     /** Singularity threshold.  */
     private val threshold: Double
-  ) {
+  ): ltd.mbor.sciko.linalg.Solver() {
     val isNonSingular: Boolean
       /** {@inheritDoc}  */
       get() {
@@ -318,15 +318,7 @@ open class QRDecomposition constructor(
         return true
       }
 
-    inline fun <reified D: Dimension> solve(b: MultiArray<Double, out D>): MultiArray<Double, D> {
-      return when(D::class) {
-        D1::class -> solveVector(b as MultiArray<Double, D1>) as MultiArray<Double, D>
-        D2::class -> solveMatrix(b as MultiArray<Double, D2>) as MultiArray<Double, D>
-        else -> throw IllegalArgumentException("Dimension ${D::class} not supported")
-      }
-    }
-
-    fun solveVector(b: RealVector): RealVector {
+    override fun solveVector(b: RealVector): RealVector {
       val n = qrt.size
       val m = qrt[0].size
       if (b.dimension != m) {
@@ -362,7 +354,7 @@ open class QRDecomposition constructor(
       return mk.ndarray(x)
     }
 
-    fun solveMatrix(b: RealMatrix): RealMatrix {
+    override fun solveMatrix(b: RealMatrix): RealMatrix {
       val n = qrt.size
       val m = qrt[0].size
       if (b.rowDimension != m) {

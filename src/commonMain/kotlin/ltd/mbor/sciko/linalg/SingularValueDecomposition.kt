@@ -665,7 +665,7 @@ class SingularValueDecomposition(matrix: RealMatrix) {
   class Solver(
     singularValues: DoubleArray, uT: RealMatrix,
     v: RealMatrix, nonSingular: Boolean, tol: Double
-  ) {
+  ): ltd.mbor.sciko.linalg.Solver() {
     /** Pseudo-inverse of the initial matrix.  */
     private val pseudoInverse: RealMatrix
 
@@ -709,15 +709,7 @@ class SingularValueDecomposition(matrix: RealMatrix) {
      * @throws org.apache.commons.math3.exception.DimensionMismatchException
      * if the matrices dimensions do not match.
      */
-    inline fun <reified D: Dimension> solve(b: MultiArray<Double, out D>): MultiArray<Double, D> {
-      return when(D::class) {
-        D1::class -> solveVector(b as MultiArray<Double, D1>) as MultiArray<Double, D>
-        D2::class -> solveMatrix(b as MultiArray<Double, D2>) as MultiArray<Double, D>
-        else -> throw IllegalArgumentException("Dimension ${D::class} not supported")
-      }
-    }
-
-    fun solveVector(b: RealVector): RealVector {
+    override fun solveVector(b: RealVector): RealVector {
       return pseudoInverse dot b
     }
 
@@ -734,7 +726,7 @@ class SingularValueDecomposition(matrix: RealMatrix) {
      * @throws org.apache.commons.math3.exception.DimensionMismatchException
      * if the matrices dimensions do not match.
      */
-    fun solveMatrix(b: RealMatrix): RealMatrix {
+    override fun solveMatrix(b: RealMatrix): RealMatrix {
       return pseudoInverse dot b
     }
 

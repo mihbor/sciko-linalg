@@ -357,7 +357,7 @@ import kotlin.math.sqrt
     private val imagEigenvalues: DoubleArray,
     /** Eigenvectors. */
     private val eigenvectors: Array<ArrayRealVector>
-  ) {
+  ): ltd.mbor.sciko.linalg.Solver() {
 
     /**
      * Solves the linear equation A &times; X = B for symmetric matrices A.
@@ -372,15 +372,7 @@ import kotlin.math.sqrt
      * @throws DimensionMismatchException if the matrices dimensions do not match.
      * @throws SingularMatrixException if the decomposed matrix is singular.
      */
-    inline fun <reified D: Dimension> solve(b: MultiArray<Double, out D>): MultiArray<Double, D> {
-      return when(D::class) {
-        D1::class -> solveVector(b as MultiArray<Double, D1>) as MultiArray<Double, D>
-        D2::class -> solveMatrix(b as MultiArray<Double, D2>) as MultiArray<Double, D>
-        else -> throw IllegalArgumentException("Dimension ${D::class} not supported")
-      }
-    }
-
-    fun solveVector(b: RealVector): RealVector {
+    override fun solveVector(b: RealVector): RealVector {
       if (!isNonSingular) throw SingularMatrixException()
       val m = realEigenvalues.size
       if (b.dimension != m) throw DimensionMismatchException(b.dimension, m)
@@ -395,7 +387,7 @@ import kotlin.math.sqrt
       return mk.ndarray(bp)
     }
 
-    fun solveMatrix(b: RealMatrix): RealMatrix {
+    override fun solveMatrix(b: RealMatrix): RealMatrix {
       if (!isNonSingular) throw SingularMatrixException()
       val m = realEigenvalues.size
       if (b.rowDimension != m) throw DimensionMismatchException(b.rowDimension, m)
