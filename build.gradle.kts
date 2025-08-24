@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
+
 plugins {
   kotlin("multiplatform") version "2.0.21"
   id("maven-publish")
@@ -15,6 +18,7 @@ kotlin {
   jvmToolchain(21)
   js(IR) {
     browser()
+    binaries.executable()
   }
   sourceSets {
     val commonMain by getting {
@@ -34,4 +38,8 @@ kotlin {
       }
     }
   }
+}
+
+rootProject.plugins.withType(YarnPlugin::class.java) {
+  rootProject.the<YarnRootExtension>().yarnLockAutoReplace = true
 }
