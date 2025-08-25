@@ -270,9 +270,9 @@ class SingularValueDecompositionTest {
   private fun loadRealMatrix(m: MutableMultiArray<Double, D2>, resourceName: String) {
     val `in` = checkNotNull(javaClass.getResourceAsStream(resourceName))
     val br = `in`.reader().buffered()
-    var strLine: String
+    var strLine: String = ""
     var row = 0
-    while ((br.readLine().also { strLine = it }) != null) {
+    while ((br.readLine()?.also { strLine = it }) != null) {
       if (!strLine.startsWith("#")) {
         var col = 0
         for (entry in strLine.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {

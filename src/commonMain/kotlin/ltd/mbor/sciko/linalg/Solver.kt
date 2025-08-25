@@ -6,6 +6,7 @@ import org.jetbrains.kotlinx.multik.ndarray.data.Dimension
 import org.jetbrains.kotlinx.multik.ndarray.data.MultiArray
 
 abstract class Solver {
+  @Suppress("UNCHECKED_CAST")
   inline fun <reified D: Dimension> solve(b: MultiArray<Double, out D>): MultiArray<Double, D> {
     return when(D::class) {
       D1::class -> solveVector(b as MultiArray<Double, D1>) as MultiArray<Double, D>
