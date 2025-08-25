@@ -56,7 +56,7 @@ The personal access token needs the `read:packages` scope.
 
 ### Automatic Publishing
 
-The library is automatically published to GitHub Packages when a release is created or when the workflow is manually triggered.
+The library is automatically published to GitHub Packages on every push to the main branch, when a release is created, or when the workflow is manually triggered.
 
 ### Manual Publishing
 
