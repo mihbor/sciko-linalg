@@ -2,8 +2,15 @@ rootProject.name = "sciko-linalg"
 pluginManagement {
   repositories {
     gradlePluginPortal()
-    google()
     mavenCentral()
+    // Add Google repository for Android plugin
+    maven("https://maven.google.com/") {
+      content {
+        includeGroupByRegex("com\\.android.*")
+        includeGroupByRegex("com\\.google.*")
+        includeGroupByRegex("androidx.*")
+      }
+    }
   }
 }
 plugins {
