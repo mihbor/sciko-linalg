@@ -9,7 +9,7 @@ A Kotlin Multiplatform library for linear algebra operations.
 - QR decomposition
 - Schur transformation
 - High precision floating point utilities
-- Support for both JVM and JavaScript platforms
+- Support for JVM, JavaScript, and Android platforms
 
 ## Usage
 
@@ -31,6 +31,27 @@ repositories {
 
 dependencies {
     implementation("ltd.mbor.sciko:sciko-linalg:0.1-SNAPSHOT")
+}
+```
+
+### Android
+
+For Android projects, use the Android-specific artifact:
+
+```kotlin
+repositories {
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/mihbor/sciko-linalg")
+        credentials {
+            username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+            password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+        }
+    }
+}
+
+dependencies {
+    implementation("ltd.mbor.sciko:sciko-linalg-android:0.1-SNAPSHOT")
 }
 ```
 
