@@ -3,8 +3,6 @@ import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 
 plugins {
   kotlin("multiplatform") version "2.2.10"
-  id("com.android.library") version "8.11.1"
-  id("org.jetbrains.kotlin.android") version "2.2.10" apply false
   id("maven-publish")
 }
 
@@ -13,7 +11,6 @@ version = "0.1-SNAPSHOT"
 
 repositories {
   mavenCentral()
-  google()
 }
 
 kotlin {
@@ -23,7 +20,6 @@ kotlin {
     browser()
     binaries.executable()
   }
-  androidTarget()
   sourceSets {
     val commonMain by getting {
       dependencies {
@@ -41,18 +37,6 @@ kotlin {
         implementation(kotlin("test"))
       }
     }
-  }
-}
-
-android {
-  compileSdk = 36
-  namespace = "ltd.mbor.sciko.linalg"
-  defaultConfig {
-    minSdk = 21
-  }
-  compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
   }
 }
 
