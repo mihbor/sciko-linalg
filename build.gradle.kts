@@ -23,7 +23,9 @@ kotlin {
     browser()
     binaries.executable()
   }
-  androidTarget()
+  androidTarget {
+    publishLibraryVariants("release", "debug")
+  }
   sourceSets {
     val commonMain by getting {
       dependencies {
